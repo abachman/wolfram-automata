@@ -7,7 +7,7 @@ Check out:
 * [Zelda Houses][z]
 * [Inverted Zelda Houses][iz]
 * [Sierpinski Triangles][st]
-* [Universal Computation][ut]
+* [Universal Computation][uc]
 * [Quartz Crystals][qc]
 
 Or find your own.
