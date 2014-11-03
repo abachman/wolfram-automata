@@ -1,0 +1,231 @@
+<!doctype html>
+<html>
+<head>
+  <title>1 Dimensional Cellular Automata</title>
+
+  <link href='reset.css' type='text/css' rel='stylesheet' />
+  <link href='style.css' type='text/css' rel='stylesheet' />
+  <script src='//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js'></script>
+  <script src='underscore-min.js'></script>
+  <script src='surface.js'></script>
+  <script src='wolfram.js'></script>
+  <script>
+    function query(str) {
+      return (str || document.location.search).replace(/(^\?)/,'').split("&").map(function(n){return n = n.split("="),this[n[0]] = n[1],this}.bind({}))[0];
+    }
+
+    function draw_b() {
+      var b_canvas = document.getElementById("pCanvas");
+      var b_context = b_canvas.getContext("2d");
+      b_context.fillStyle = "#FFFFFF";
+      b_context.fillRect(10, 10, 100, 100);
+    }
+
+    function cbs_to_rule(rule) {
+      $('.ruleset-selection input').each(function () {
+        if ((parseInt(this.value) & rule) >= 1) {
+          $(this).prop('checked', true)
+        } else {
+          $(this).prop('checked', false)
+        }
+      })
+
+      // initialize label
+      $('#rulenumber').text(rule)
+    }
+
+    // initialize the page
+    var STEP = 4;
+    var STARTING_RULE = 90;
+
+    $(function () {
+      var parms = query()
+
+      try {
+        var rs
+        if (parms['rule'] && (rs = parseInt(parms['rule'])) && rs <= 255 && rs >= 0) {
+          STARTING_RULE = rs
+        }
+      } catch (ex) {
+        console.error("failed to parse params", ex)
+      }
+
+      var s = new Surface('pCanvas')
+      var wolf = new Wolfram(STARTING_RULE, s.width / STEP)
+      var height = s.height
+      var is_running = false
+
+      // set appropriate checkboxes
+      cbs_to_rule(STARTING_RULE)
+
+      var y = 0;
+
+      s.draw(function () {
+        // draw row
+        wolf.each_cell(function (x, value) {
+          s.fill(value == 1 ? '#ffffff' : '#000000')
+          s.rect(x * STEP, y, STEP, STEP)
+        })
+
+        // next world state
+        wolf.step()
+
+        // increment y
+        y += STEP
+        if (y >= s.height) {
+          // wolf.initialize()
+          y = 0
+        }
+      })
+
+      var run = function () {
+        if (is_running) return
+        s.kill = false
+        s.draw(draw)
+        is_running = true
+      }
+
+      $('#kill').on('click', function (evt) {
+        evt.preventDefault()
+        s.stop()
+      })
+
+      $('#start').on('click', function (evt) {
+        evt.preventDefault()
+        s.start()
+      })
+
+      $('#clear').on('click', function (evt) {
+        evt.preventDefault()
+        s.background(0, 0, 0)
+        wolf.initialize()
+      })
+
+      $('#random').on('click', function (evt) {
+        evt.preventDefault()
+
+        var rule = Math.floor(Math.random() * 256)
+        s.background(0, 0, 0)
+        wolf.set_rule(rule)
+        cbs_to_rule(rule)
+      })
+
+      $('#invert').on('click', function (evt) {
+        evt.preventDefault()
+
+        $('.ruleset-selection input').each(function () {
+          $(this).prop('checked', !$(this).is(':checked'))
+        })
+
+        var rule = 0
+        $('.ruleset-selection input:checked').each(function () {
+          rule += parseInt(this.value)
+        })
+
+        wolf.set_rule(rule)
+        cbs_to_rule(rule)
+      })
+
+      $('#flip').on('click', function (evt) {
+        evt.preventDefault()
+
+        // FIFO
+        var flags = []
+
+        $('.ruleset-selection input').each(function () {
+          flags.push($(this).is(':checked'))
+        })
+
+        $('.ruleset-selection input').each(function () {
+           $(this).prop('checked', flags.pop())
+        })
+
+        var rule = 0
+        $('.ruleset-selection input:checked').each(function () {
+          rule += parseInt(this.value)
+        })
+
+        wolf.set_rule(rule)
+        cbs_to_rule(rule)
+      })
+
+      $('.ruleset-selection').on('change', 'input', function (evt) {
+        var rule = 0
+        $('.ruleset-selection input:checked').each(function () {
+          rule += parseInt(this.value)
+        })
+        wolf.set_rule(rule)
+        $('#rulenumber').text(rule)
+      })
+
+      s.start()
+    })
+  </script>
+</head>
+<body>
+
+  <div class='content'>
+    <div class='header'>
+      <h1>1 Dimensional Cellular Automata</h1>
+    </div>
+
+    <canvas id='pCanvas' width='600px' height='300px' style='width:600px;height:300px'></canvas>
+    <div class='controls'>
+      <strong>RULESET <span id='rulenumber'></span></strong>
+
+      <div class='ruleset-selection'>
+        <label>
+          <span>128</span>
+          <input type='checkbox' name='a' value='128'>
+        </label>
+        <label>
+          <span>64</span>
+          <input type='checkbox' name='b' value='64' />
+        </label>
+        <label>
+          <span>32</span>
+          <input type='checkbox' name='c' value='32' />
+        </label>
+        <label>
+          <span>16</span>
+          <input type='checkbox' name='d' value='16' />
+        </label>
+        <label>
+          <span>8</span>
+          <input type='checkbox' name='e' value='8' />
+        </label>
+        <label>
+          <span>4</span>
+          <input type='checkbox' name='f' value='4' />
+        </label>
+        <label>
+          <span>2</span>
+          <input type='checkbox' name='g' value='2' />
+        </label>
+        <label>
+          <span>1</span>
+          <input type='checkbox' name='h' value='1' />
+        </label>
+      </div>
+
+      <a class='btn green' id='start' href='#'>go</a>
+      <a class='btn red' id='kill' href='#'>stop</a>
+      <a class='btn gray' id='clear' href='#'>clear</a>
+      <a class='btn white' id='invert' href='#'>invert</a>
+      <a class='btn blue' id='flip' href='#'>flip</a>
+      <a class='btn purple' id='random' href='#'>rando</a>
+    </div>
+
+    <br>
+    <br>
+    <br>
+    <a href='http://mathworld.wolfram.com/ElementaryCellularAutomaton.html' target='_blank' style='display:block; text-align:center;color:rgb(15, 116, 219)'>
+      what is this?
+    </a>
+  </div>
+
+  <div id='footer'>
+  </div>
+
+</body>
+</html>

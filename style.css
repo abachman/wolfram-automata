@@ -1,0 +1,91 @@
+body {
+  font-family: Helvetica, Arial;
+  -webkit-font-smoothing: antialiased;
+  background: #141414;
+}
+
+.header h1 {
+  font-size: 72px;
+  font-family: Helvetica, Arial;
+  color: #eee; /* */
+  /* text-shadow: rgb(68, 85, 102) 0px 2px 3px; */
+  line-height: 0.8em;
+  margin-top: -10px;
+  margin-bottom: 20px;
+}
+
+.content {
+  width: 600px;
+  margin: 0 auto;
+}
+
+.controls {
+  color: #fff;
+  text-align: center;
+  margin-top: 16px;
+}
+
+.ruleset-selection {
+  margin: 24px 0;
+}
+
+.ruleset-selection label {
+  display: inline-block;
+  width: 32px;
+  text-align: center;
+}
+
+.ruleset-selection label span {
+  display: block;
+}
+
+.btn {
+  font-family: Arial;
+  color: #ffffff;
+  font-size: 20px;
+  padding: 10px 20px 10px 20px;
+  text-decoration: none;
+}
+
+.btn.red {
+  background: #a82a2a;
+}
+
+.btn.green {
+  background: #3aa62a;
+}
+
+.btn.gray {
+  background: #222;
+}
+
+.btn.white {
+  background: #aaa;
+  color: #323232;
+}
+
+.btn.blue {
+  background: #09c;
+}
+
+.btn.purple {
+  font-weight: bold;
+  color: black;
+  background: purple;
+  background: -moz-linear-gradient( top ,
+      rgba(255, 0, 0, 1) 0%,
+      rgba(255, 255, 0, 1) 15%,
+      rgba(0, 255, 0, 1) 30%,
+      rgba(0, 255, 255, 1) 50%,
+      rgba(0, 0, 255, 1) 65%,
+      rgba(255, 0, 255, 1) 80%,
+      rgba(255, 0, 0, 1) 100%);
+  background: -webkit-gradient(linear,  left top,  left bottom,
+      color-stop(0%, rgba(255, 0, 0, 1)),
+      color-stop(15%, rgba(255, 255, 0, 1)),
+      color-stop(30%, rgba(0, 255, 0, 1)),
+      color-stop(50%, rgba(0, 255, 255, 1)),
+      color-stop(65%, rgba(0, 0, 255, 1)),
+      color-stop(80%, rgba(255, 0, 255, 1)),
+      color-stop(100%, rgba(255, 0, 0, 1)));
+}
