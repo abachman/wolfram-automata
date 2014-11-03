@@ -89,3 +89,15 @@ body {
       color-stop(80%, rgba(255, 0, 255, 1)),
       color-stop(100%, rgba(255, 0, 0, 1)));
 }
+
+.links {
+  margin-top: 32px;
+  text-align: center;
+  color: rgb(15, 116, 219);
+}
+
+.links a {
+  color: rgb(15, 116, 219);
+  padding: 0 16px;
+  display: inline-block;
+}
