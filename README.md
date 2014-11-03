@@ -14,6 +14,7 @@ Or find your own.
 
 Lots more details here: http://mathworld.wolfram.com/ElementaryCellularAutomaton.html
 
+
 [z]:  http://demo.adambachman.org/wolfram/?rule=73
 [iz]: http://demo.adambachman.org/wolfram/?rule=109
 [hh]: http://demo.adambachman.org/wolfram/?rule=105
