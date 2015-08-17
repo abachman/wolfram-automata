@@ -5,11 +5,48 @@
 
   <link href='reset.css' type='text/css' rel='stylesheet' />
   <link href='style.css' type='text/css' rel='stylesheet' />
-  <script src='//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js'></script>
-  <script src='underscore-min.js'></script>
   <script src='surface.js'></script>
   <script src='wolfram.js'></script>
   <script>
+    window.onReadyCallbacks = [];
+    window.isReady = false;
+
+    document.addEventListener('DOMContentLoaded', function () {
+      if (onReadyCallbacks.length > 0) {
+        window.isReady = true;
+        onReadyCallbacks.forEach(function (callback) {
+          callback();
+        });
+      }
+    });
+
+    /* modification of Salt.js DOM Selector Lib. By @james2doyle */
+    window.$ = function(selector, context, undefined) {
+      if (typeof selector === 'string') {
+        // an object containing the matching keys and native get commands
+        var matches = {
+          '#': 'getElementById',
+          '.': 'getElementsByClassName',
+          '@': 'getElementsByName',
+          '=': 'getElementsByTagName',
+          '*': 'querySelectorAll'
+        }[selector[0]]; // you can treat a string as an array of characters
+
+        // now pass the selector without the key/first character
+        var el = (((context === undefined) ? document: context)[matches](selector.slice(1)));
+
+        // if there is one element than return the 0 element
+        return ((el.length < 2) ? el[0]: el);
+      } else if (typeof selector === 'function') {
+        if (window.isReady) {
+          selector();
+        } else {
+          window.onReadyCallbacks.push(selector);
+        }
+      }
+    };
+
+    // access query params
     function query(str) {
       return (str || document.location.search).replace(/(^\?)/,'').split("&").map(function(n){return n = n.split("="),this[n[0]] = n[1],this}.bind({}))[0];
     }
@@ -22,16 +59,32 @@
     }
 
     function cbs_to_rule(rule) {
-      $('.ruleset-selection input').each(function () {
-        if ((parseInt(this.value) & rule) >= 1) {
-          $(this).prop('checked', true)
+      // given a rule, check the appropriate boxes
+      var btn, cbs = $('.rs_input');
+      for (var i=0; i < cbs.length; i++) {
+        btn = cbs[i];
+        if ((parseInt(btn.value) & rule) >= 1) {
+          btn.checked = true;
         } else {
-          $(this).prop('checked', false)
+          btn.checked = false;
         }
-      })
+      };
 
       // initialize label
-      $('#rulenumber').text(rule)
+      $('#rulenumber').innerText = rule;
+    }
+
+    function each_cb(callback) {
+      var cbs = $('.rs_input');
+      for (var i=0; i < cbs.length; i++) {
+        callback(cbs[i]);
+      }
+    }
+
+    function current_cb_rule() {
+      var rule = 0;
+      each_cb(function (btn) { if (btn.checked) rule += parseInt(btn.value); });
+      return rule;
     }
 
     // initialize the page
@@ -50,10 +103,16 @@
         console.error("failed to parse params", ex)
       }
 
-      var s = new Surface('pCanvas')
-      var wolf = new Wolfram(STARTING_RULE, s.width / STEP)
-      var height = s.height
-      var is_running = false
+      var s = new Surface('pCanvas'),
+          wolf = new Wolfram(STARTING_RULE, s.width / STEP),
+          height = s.height,
+          is_running = false,
+          update_with_current_rule = function (rule) {
+            if (rule === undefined)
+              rule = current_cb_rule();
+            wolf.set_rule(rule);
+            cbs_to_rule(rule);
+          }
 
       // set appropriate checkboxes
       cbs_to_rule(STARTING_RULE)
@@ -85,78 +144,55 @@
         is_running = true
       }
 
-      $('#kill').on('click', function (evt) {
+      $('#kill').addEventListener('click', function (evt) {
         evt.preventDefault()
         s.stop()
       })
 
-      $('#start').on('click', function (evt) {
+      $('#start').addEventListener('click', function (evt) {
         evt.preventDefault()
         s.start()
       })
 
-      $('#clear').on('click', function (evt) {
+      $('#clear').addEventListener('click', function (evt) {
         evt.preventDefault()
         s.background(0, 0, 0)
         wolf.initialize()
       })
 
-      $('#random').on('click', function (evt) {
+      $('#random').addEventListener('click', function (evt) {
         evt.preventDefault()
+        s.background(0, 0, 0)
 
         var rule = Math.floor(Math.random() * 256)
-        s.background(0, 0, 0)
-        wolf.set_rule(rule)
-        cbs_to_rule(rule)
+        update_with_current_rule(rule);
       })
 
-      $('#invert').on('click', function (evt) {
+      $('#invert').addEventListener('click', function (evt) {
         evt.preventDefault()
-
-        $('.ruleset-selection input').each(function () {
-          $(this).prop('checked', !$(this).is(':checked'))
-        })
-
-        var rule = 0
-        $('.ruleset-selection input:checked').each(function () {
-          rule += parseInt(this.value)
-        })
-
-        wolf.set_rule(rule)
-        cbs_to_rule(rule)
+        s.background(0, 0, 0)
+        // toggle
+        each_cb(function (btn) { btn.checked = !btn.checked; });
+        update_with_current_rule();
       })
 
-      $('#flip').on('click', function (evt) {
+      $('#flip').addEventListener('click', function (evt) {
         evt.preventDefault()
 
         // FIFO
         var flags = []
+        each_cb(function (btn) { flags.push(btn.checked) });
+        each_cb(function (btn) { btn.checked = flags.pop() });
 
-        $('.ruleset-selection input').each(function () {
-          flags.push($(this).is(':checked'))
-        })
-
-        $('.ruleset-selection input').each(function () {
-           $(this).prop('checked', flags.pop())
-        })
-
-        var rule = 0
-        $('.ruleset-selection input:checked').each(function () {
-          rule += parseInt(this.value)
-        })
-
-        wolf.set_rule(rule)
-        cbs_to_rule(rule)
+        update_with_current_rule();
       })
 
-      $('.ruleset-selection').on('change', 'input', function (evt) {
-        var rule = 0
-        $('.ruleset-selection input:checked').each(function () {
-          rule += parseInt(this.value)
+      var btn, cbs = $('.rs_input')
+      each_cb(function (btn) {
+        btn.addEventListener('change', function (evt) {
+          update_with_current_rule();
         })
-        wolf.set_rule(rule)
-        $('#rulenumber').text(rule)
-      })
+      });
 
       s.start()
     })
@@ -176,35 +212,35 @@
       <div class='ruleset-selection'>
         <label>
           <span>128</span>
-          <input type='checkbox' name='a' value='128'>
+          <input type='checkbox' class='rs_input' name='a' value='128'>
         </label>
         <label>
           <span>64</span>
-          <input type='checkbox' name='b' value='64' />
+          <input type='checkbox' class='rs_input' name='b' value='64' />
         </label>
         <label>
           <span>32</span>
-          <input type='checkbox' name='c' value='32' />
+          <input type='checkbox' class='rs_input' name='c' value='32' />
         </label>
         <label>
           <span>16</span>
-          <input type='checkbox' name='d' value='16' />
+          <input type='checkbox' class='rs_input' name='d' value='16' />
         </label>
         <label>
           <span>8</span>
-          <input type='checkbox' name='e' value='8' />
+          <input type='checkbox' class='rs_input' name='e' value='8' />
         </label>
         <label>
           <span>4</span>
-          <input type='checkbox' name='f' value='4' />
+          <input type='checkbox' class='rs_input' name='f' value='4' />
         </label>
         <label>
           <span>2</span>
-          <input type='checkbox' name='g' value='2' />
+          <input type='checkbox' class='rs_input' name='g' value='2' />
         </label>
         <label>
           <span>1</span>
-          <input type='checkbox' name='h' value='1' />
+          <input type='checkbox' class='rs_input' name='h' value='1' />
         </label>
       </div>
 
