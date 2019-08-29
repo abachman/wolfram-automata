@@ -15,9 +15,9 @@ Or find your own.
 Lots more details here: http://mathworld.wolfram.com/ElementaryCellularAutomaton.html
 
 
-[z]:  http://demo.adambachman.org/wolfram/?rule=73
-[iz]: http://demo.adambachman.org/wolfram/?rule=109
-[hh]: http://demo.adambachman.org/wolfram/?rule=105
-[st]: http://demo.adambachman.org/wolfram/?rule=90
-[uc]: http://demo.adambachman.org/wolfram/?rule=110
-[qc]: http://demo.adambachman.org/wolfram/?rule=169
+[z]:  http://adambachman.org/wolfram/?rule=73
+[iz]: http://adambachman.org/wolfram/?rule=109
+[hh]: http://adambachman.org/wolfram/?rule=105
+[st]: http://adambachman.org/wolfram/?rule=90
+[uc]: http://adambachman.org/wolfram/?rule=110
+[qc]: http://adambachman.org/wolfram/?rule=169
